@@ -13,7 +13,7 @@ keywords = ["mcp", "model-context-protocol", "freeipa", "ipa"]
 dependencies = [
   "fastmcp>=3.0.0,<4",
   "httpx>=0.28.1",
-  "mcp-common>=0.6.0",
+  "mcp-common @ git+https://github.com/puhamihai/mcp-common",
   "pydantic>=2.0",
   "pydantic-settings>=2.0",
   "typer>=0.15.0",
