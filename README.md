@@ -1,6 +1,6 @@
 > **Mirror notice.** This repository is a personal mirror of `vhspace/ipa-mcp` v1.3.0, restored from a locally-cached wheel after the upstream repository was removed from GitHub. The source is preserved as-is under its original Apache-2.0 license.
 >
-> **Caveat:** the package depends on `mcp-common` (also from the archived `vhspace` org, distinct from the unrelated PyPI package of the same name). Until that dependency is mirrored or replaced, the source here is preserved but not yet end-to-end installable from a clean checkout.
+> The `mcp-common` dependency is also mirrored at [puhamihai/mcp-common](https://github.com/puhamihai/mcp-common); the install chain is self-contained.
 
 # IPA MCP Server
 
@@ -11,16 +11,16 @@ MCP server and CLI for [FreeIPA](https://www.freeipa.org/) — manages user grou
 
 ## Quick Start
 
-### Cursor IDE
+### Claude Code / Cursor / generic MCP client
 
-Add to `.cursor/mcp.json`:
+Point your MCP config at the git URL — `uvx` will install both this package and the mirrored `mcp-common` automatically:
 
 ```json
 {
   "mcpServers": {
     "ipa-mcp": {
       "command": "uvx",
-      "args": ["--from", "ipa-mcp", "ipa-mcp"],
+      "args": ["--from", "git+https://github.com/puhamihai/ipa-mcp", "ipa-mcp"],
       "env": {
         "IPA_HOST": "ipa.example.com",
         "IPA_USERNAME": "admin",
@@ -34,8 +34,9 @@ Add to `.cursor/mcp.json`:
 ### From Source
 
 ```bash
+git clone https://github.com/puhamihai/ipa-mcp
 cd ipa-mcp
-uv sync --all-groups
+uv sync
 uv run ipa-mcp
 ```
 
