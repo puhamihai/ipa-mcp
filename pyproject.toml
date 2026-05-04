@@ -23,5 +23,8 @@ dependencies = [
 ipa-cli = "ipa_mcp.cli:main"
 ipa-mcp = "ipa_mcp.server:main"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["ipa_mcp"]
