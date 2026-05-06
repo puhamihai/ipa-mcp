@@ -121,7 +121,7 @@ class IPAClient:
             raise RuntimeError(f"IPA {method} error {err.get('code')}: {err.get('message')}")
         return body.get("result", body)
 
-    # ── user groups ──────────────────────────────────────────────
+    # ── user groups ──────────────────────────────
 
     def group_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("group_find", [criteria], kw)
@@ -135,7 +135,7 @@ class IPAClient:
     def group_show(self, name: str, **kw: Any) -> Any:
         return self._call("group_show", [name], kw)
 
-    # ── host groups ──────────────────────────────────────────────
+    # ── host groups ──────────────────────────────
 
     def hostgroup_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("hostgroup_find", [criteria], kw)
@@ -149,7 +149,7 @@ class IPAClient:
     def hostgroup_show(self, name: str, **kw: Any) -> Any:
         return self._call("hostgroup_show", [name], kw)
 
-    # ── HBAC rules ───────────────────────────────────────────────
+    # ── HBAC rules ───────────────────────────────
 
     def hbacrule_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("hbacrule_find", [criteria], kw)
@@ -166,7 +166,7 @@ class IPAClient:
     def hbacrule_show(self, name: str, **kw: Any) -> Any:
         return self._call("hbacrule_show", [name], kw)
 
-    # ── sudo rules ───────────────────────────────────────────────
+    # ── sudo rules ───────────────────────────────
 
     def sudorule_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("sudorule_find", [criteria], kw)
@@ -186,7 +186,7 @@ class IPAClient:
     def sudorule_show(self, name: str, **kw: Any) -> Any:
         return self._call("sudorule_show", [name], kw)
 
-    # ── users ────────────────────────────────────────────────────
+    # ── users ──────────────────────────────────
 
     def user_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("user_find", [criteria], kw)
@@ -194,17 +194,40 @@ class IPAClient:
     def user_show(self, name: str, **kw: Any) -> Any:
         return self._call("user_show", [name], {**kw, "all": True})
 
-    # ── hosts ────────────────────────────────────────────────────
+    def user_add(self, name: str, **kw: Any) -> Any:
+        return self._call("user_add", [name], kw)
+
+    def user_mod(self, name: str, **kw: Any) -> Any:
+        return self._call("user_mod", [name], kw)
+
+    def user_del(self, name: str, **kw: Any) -> Any:
+        return self._call("user_del", [name], kw)
+
+    def user_enable(self, name: str, **kw: Any) -> Any:
+        return self._call("user_enable", [name], kw)
+
+    def user_disable(self, name: str, **kw: Any) -> Any:
+        return self._call("user_disable", [name], kw)
+
+    def passwd(self, principal: str, password: str, **kw: Any) -> Any:
+        return self._call("passwd", [principal, password], kw)
+
+    # ── group membership mutations ───────────────────────
+
+    def group_remove_member(self, name: str, **kw: Any) -> Any:
+        return self._call("group_remove_member", [name], kw)
+
+    # ── hosts ──────────────────────────────────
 
     def host_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("host_find", [criteria], kw)
 
-    # ── HBAC test ─────────────────────────────────────────────
+    # ── HBAC test ────────────────────────────────
 
     def hbactest(self, **kw: Any) -> Any:
         return self._call("hbactest", [], kw)
 
-    # ── hostgroup membership mutations ────────────────────────
+    # ── hostgroup membership mutations ────────────────────
 
     def hostgroup_remove_member(self, name: str, **kw: Any) -> Any:
         return self._call("hostgroup_remove_member", [name], kw)
