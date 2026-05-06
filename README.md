@@ -53,14 +53,22 @@ uv run ipa-mcp
 | `ipa_list_users` | List users |
 | `ipa_list_hosts` | List hosts |
 
-### Write Tools (10)
+### Write Tools (18)
 
 | Tool | Description |
 |------|-------------|
+| `ipa_create_user` | Create user (optional random or explicit password, SSH keys) |
+| `ipa_modify_user` | Modify user attributes / SSH keys / reset random password |
+| `ipa_enable_user` | Enable (unlock) user account |
+| `ipa_disable_user` | Disable (lock) user account |
+| `ipa_delete_user` | Delete user (hard or `preserve=True` soft-delete) |
+| `ipa_set_user_password` | Admin password reset (expires on first login) |
 | `ipa_create_group` | Create user group |
 | `ipa_add_group_members` | Add users to group |
+| `ipa_remove_group_members` | Remove users from group |
 | `ipa_create_hostgroup` | Create host group |
 | `ipa_add_hostgroup_members` | Add hosts to host group |
+| `ipa_remove_hostgroup_members` | Remove hosts from host group |
 | `ipa_create_hbac_rule` | Create HBAC rule |
 | `ipa_add_hbac_rule_members` | Add members to HBAC rule |
 | `ipa_create_sudo_rule` | Create sudo rule |

@@ -277,6 +277,214 @@ def ipa_add_group_members(
 
 @mcp.tool(annotations=_WRITE)
 @mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_remove_group_members(
+    name: str,
+    users: list[str] | None = None,
+    groups: list[str] | None = None,
+) -> Any:
+    """Remove users or nested groups from a user group.
+
+    Args:
+        name: Target group name.
+        users: List of usernames to remove.
+        groups: List of nested group names to remove.
+    """
+    c = _get_client()
+    kw: dict[str, Any] = {}
+    if users:
+        kw["user"] = users
+    if groups:
+        kw["group"] = groups
+    if not kw:
+        raise ToolError("Provide at least one of users or groups")
+    return _extract_results(c.group_remove_member(name, **kw))
+
+
+# ── user lifecycle ───────────────────────────────────────────────
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_create_user(
+    login: str,
+    first_name: str,
+    last_name: str,
+    email: str | None = None,
+    display_name: str | None = None,
+    initials: str | None = None,
+    home_directory: str | None = None,
+    login_shell: str | None = None,
+    ssh_public_keys: list[str] | None = None,
+    random_password: bool = False,
+    password: str | None = None,
+) -> Any:
+    """Create a FreeIPA user.
+
+    Set ``random_password=True`` to have IPA generate a random password and
+    return it in the response (`result.randompassword`); the user will be
+    forced to change it on first login. Pass ``password`` to set a specific
+    initial password instead. Provide neither for a passwordless account.
+
+    Args:
+        login: Username (uid).
+        first_name: Given name.
+        last_name: Surname.
+        email: Email address.
+        display_name: Full display name (defaults to "<first> <last>" if omitted).
+        initials: User initials (e.g. "AK").
+        home_directory: Home directory path.
+        login_shell: Login shell (e.g. "/bin/bash").
+        ssh_public_keys: List of OpenSSH public key strings.
+        random_password: Generate and return a random password.
+        password: Set a specific initial password (mutually exclusive with random_password).
+    """
+    if random_password and password:
+        raise ToolError("Provide either random_password or password, not both")
+    c = _get_client()
+    kw: dict[str, Any] = {"givenname": first_name, "sn": last_name}
+    if email:
+        kw["mail"] = email
+    if display_name:
+        kw["displayname"] = display_name
+    if initials:
+        kw["initials"] = initials
+    if home_directory:
+        kw["homedirectory"] = home_directory
+    if login_shell:
+        kw["loginshell"] = login_shell
+    if ssh_public_keys:
+        kw["ipasshpubkey"] = ssh_public_keys
+    if random_password:
+        kw["random"] = True
+    if password:
+        kw["userpassword"] = password
+    return _extract_results(c.user_add(login, **kw))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_modify_user(
+    login: str,
+    first_name: str | None = None,
+    last_name: str | None = None,
+    email: str | None = None,
+    display_name: str | None = None,
+    initials: str | None = None,
+    home_directory: str | None = None,
+    login_shell: str | None = None,
+    ssh_public_keys: list[str] | None = None,
+    clear_ssh_public_keys: bool = False,
+    random_password: bool = False,
+) -> Any:
+    """Modify attributes of an existing FreeIPA user.
+
+    Pass ``ssh_public_keys=[...]`` to replace the current SSH key set, or
+    ``clear_ssh_public_keys=True`` to remove all keys. Pass ``random_password=True``
+    to have IPA generate a new random password (returned in `result.randompassword`,
+    expires on first login).
+
+    Args:
+        login: Username (uid).
+        first_name: Given name.
+        last_name: Surname.
+        email: Email address.
+        display_name: Full display name.
+        initials: User initials.
+        home_directory: Home directory path.
+        login_shell: Login shell.
+        ssh_public_keys: Replacement list of OpenSSH public keys.
+        clear_ssh_public_keys: Remove all SSH keys (mutually exclusive with ssh_public_keys).
+        random_password: Generate and return a new random password.
+    """
+    if ssh_public_keys is not None and clear_ssh_public_keys:
+        raise ToolError("Provide either ssh_public_keys or clear_ssh_public_keys, not both")
+    c = _get_client()
+    kw: dict[str, Any] = {}
+    if first_name is not None:
+        kw["givenname"] = first_name
+    if last_name is not None:
+        kw["sn"] = last_name
+    if email is not None:
+        kw["mail"] = email
+    if display_name is not None:
+        kw["displayname"] = display_name
+    if initials is not None:
+        kw["initials"] = initials
+    if home_directory is not None:
+        kw["homedirectory"] = home_directory
+    if login_shell is not None:
+        kw["loginshell"] = login_shell
+    if clear_ssh_public_keys:
+        kw["ipasshpubkey"] = ""
+    elif ssh_public_keys is not None:
+        kw["ipasshpubkey"] = ssh_public_keys
+    if random_password:
+        kw["random"] = True
+    if not kw:
+        raise ToolError("Provide at least one attribute to modify")
+    return _extract_results(c.user_mod(login, **kw))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_enable_user(login: str) -> Any:
+    """Enable (unlock) a FreeIPA user account.
+
+    Args:
+        login: Username (uid).
+    """
+    return _extract_results(_get_client().user_enable(login))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_disable_user(login: str) -> Any:
+    """Disable (lock) a FreeIPA user account.
+
+    Args:
+        login: Username (uid).
+    """
+    return _extract_results(_get_client().user_disable(login))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_delete_user(login: str, preserve: bool = False) -> Any:
+    """Delete a FreeIPA user.
+
+    With ``preserve=True``, the user is moved to ``cn=deleted users`` (soft-delete,
+    recoverable via ``user-undel``). With ``preserve=False`` (default) the entry
+    is hard-deleted.
+
+    Args:
+        login: Username (uid).
+        preserve: Soft-delete to the preserved tree instead of removing the entry.
+    """
+    c = _get_client()
+    kw: dict[str, Any] = {}
+    if preserve:
+        kw["preserve"] = True
+    return _extract_results(c.user_del(login, **kw))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_set_user_password(login: str, password: str) -> Any:
+    """Set a FreeIPA user's password (admin reset).
+
+    The password is marked expired, so the user is forced to change it on
+    next login. To generate a random password instead, call
+    ``ipa_modify_user(login, random_password=True)``.
+
+    Args:
+        login: Username (uid).
+        password: New password.
+    """
+    return _extract_results(_get_client().passwd(login, password))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
 def ipa_create_hostgroup(name: str, description: str = "") -> Any:
     """Create a FreeIPA host group.
 
