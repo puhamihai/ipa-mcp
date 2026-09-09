@@ -632,7 +632,7 @@ def ipa_create_sudo_rule(
     """
     c = _get_client()
     kw: dict[str, Any] = {
-        "cmdcat": cmdcat,
+        "cmdcategory": cmdcat,
         "ipasudorunasusercategory": runasusercategory,
         "ipasudorunasgroupcategory": runasgroupcategory,
     }
@@ -778,7 +778,7 @@ def ipa_setup_forge(
     else:
         c.sudorule_add(
             sudo,
-            cmdcat="all",
+            cmdcategory="all",
             ipasudorunasusercategory="all",
             ipasudorunasgroupcategory="all",
             description=f"Forge {name} sudo",
