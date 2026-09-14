@@ -222,6 +222,15 @@ class IPAClient:
     def host_find(self, criteria: str = "", **kw: Any) -> Any:
         return self._call("host_find", [criteria], kw)
 
+    def host_show(self, fqdn: str, **kw: Any) -> Any:
+        return self._call("host_show", [fqdn], kw)
+
+    def host_add(self, fqdn: str, **kw: Any) -> Any:
+        return self._call("host_add", [fqdn], kw)
+
+    def host_mod(self, fqdn: str, **kw: Any) -> Any:
+        return self._call("host_mod", [fqdn], kw)
+
     # ── HBAC test ────────────────────────────────
 
     def hbactest(self, **kw: Any) -> Any:
