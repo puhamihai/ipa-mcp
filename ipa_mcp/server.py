@@ -9,7 +9,10 @@ from __future__ import annotations
 
 import atexit
 import logging
+import os
 import sys
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from fastmcp import FastMCP
@@ -497,6 +500,80 @@ def ipa_create_hostgroup(name: str, description: str = "") -> Any:
     if description:
         kw["description"] = description
     return _extract_results(c.hostgroup_add(name, **kw))
+
+
+@mcp.tool(annotations=_WRITE)
+@mcp_remediation_wrapper(project_repo="vhspace/ipa-mcp")
+def ipa_add_host(
+    fqdn: str,
+    description: str = "",
+    force: bool = False,
+    otp_file: str | None = None,
+    reset_otp: bool = False,
+) -> Any:
+    """Create a FreeIPA host entry with a one-time enrolment password.
+
+    The one-time password is written to a file with mode 0600 and is NEVER
+    part of the response, so it cannot leak into an assistant transcript.
+    Consume it without echoing it, e.g.
+
+        ssh <target> 'sudo ipa-client-install --domain=<domain> \
+            --realm=<REALM> --hostname=<fqdn> --mkhomedir --force-join \
+            --unattended -w "$(cat)"' < <otp_file>
+
+    Args:
+        fqdn: Fully qualified host name to create, e.g. "web01.example.com".
+        description: Optional description for the host entry.
+        force: Skip FreeIPA's DNS A/AAAA check. Required for a host that has
+            no forward DNS record, which would otherwise fail with
+            "does not have corresponding DNS A/AAAA record".
+        otp_file: Where to write the one-time password. Defaults to a private
+            temporary file.
+        reset_otp: When the host entry already exists, issue a FRESH one-time
+            password for it. This invalidates the host's current keytab, so
+            use it only for a host that is not enrolled yet or that you are
+            about to re-enrol.
+    """
+    c = _get_client()
+    existed = _exists(c.host_show, fqdn)
+    if existed and not reset_otp:
+        raise ToolError(
+            f"Host {fqdn} already exists. Pass reset_otp=True to issue a new "
+            "one-time password — note that this invalidates its current keytab."
+        )
+
+    if existed:
+        resp = c.host_mod(fqdn, random=True)
+    else:
+        kw: dict[str, Any] = {"random": True}
+        if description:
+            kw["description"] = description
+        if force:
+            kw["force"] = True
+        resp = c.host_add(fqdn, **kw)
+
+    result = _extract_results(resp)
+    otp = result.get("randompassword") if isinstance(result, dict) else None
+    if not otp:
+        raise ToolError(f"FreeIPA returned no one-time password for {fqdn}")
+
+    if otp_file:
+        path = Path(otp_file)
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    else:
+        fd, name = tempfile.mkstemp(prefix=f"ipa-otp-{fqdn}-")
+        path = Path(name)
+    with os.fdopen(fd, "w") as fh:
+        fh.write(otp)
+
+    return {
+        "fqdn": fqdn,
+        "created": not existed,
+        "otp_reset": existed,
+        "otp_file": str(path),
+        "note": "one-time password written to otp_file, mode 0600; "
+                "it is deliberately not returned here",
+    }
 
 
 @mcp.tool(annotations=_WRITE)

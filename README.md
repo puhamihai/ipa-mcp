@@ -53,7 +53,7 @@ uv run ipa-mcp
 | `ipa_list_users` | List users |
 | `ipa_list_hosts` | List hosts |
 
-### Write Tools (18)
+### Write Tools (19)
 
 | Tool | Description |
 |------|-------------|
@@ -66,6 +66,7 @@ uv run ipa-mcp
 | `ipa_create_group` | Create user group |
 | `ipa_add_group_members` | Add users to group |
 | `ipa_remove_group_members` | Remove users from group |
+| `ipa_add_host` | Create a host entry with a one-time enrolment password (written to a 0600 file, never returned) |
 | `ipa_create_hostgroup` | Create host group |
 | `ipa_add_hostgroup_members` | Add hosts to host group |
 | `ipa_remove_hostgroup_members` | Remove hosts from host group |
