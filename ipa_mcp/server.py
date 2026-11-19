@@ -641,7 +641,7 @@ def ipa_create_hbac_rule(
         description: Optional description.
     """
     c = _get_client()
-    kw: dict[str, Any] = {"servicecat": servicecat}
+    kw: dict[str, Any] = {"servicecategory": servicecat}
     if description:
         kw["description"] = description
     return _extract_results(c.hbacrule_add(name, **kw))
@@ -841,7 +841,7 @@ def ipa_setup_forge(
     if _exists(c.hbacrule_show, hbac):
         log.append(f"HBAC rule {hbac} already exists")
     else:
-        c.hbacrule_add(hbac, servicecat="all", description=f"Forge {name} access")
+        c.hbacrule_add(hbac, servicecategory="all", description=f"Forge {name} access")
         log.append(f"Created HBAC rule {hbac}")
 
     # 6. HBAC members
